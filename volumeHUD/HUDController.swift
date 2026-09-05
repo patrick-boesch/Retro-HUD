@@ -25,6 +25,7 @@ class HUDController: ObservableObject {
     private var lastShownBrightness: Float?
     private var lastShownKeyboardBrightness: Float?
     private var lastShownHUDType: HUDType?
+    private var lastShownDisplayID: CGDirectDisplayID?
     private var isObservingDisplayChanges = false
     private let isPreviewMode: Bool
 
@@ -41,13 +42,13 @@ class HUDController: ObservableObject {
 
     #if !SANDBOX
         @MainActor
-        func showBrightnessHUD(brightness: Float) {
+        func showBrightnessHUD(brightness: Float, displayID: CGDirectDisplayID? = nil) {
             // Only show brightness HUD if the feature is enabled
             guard UserDefaults.standard.bool(forKey: "brightnessEnabled") else {
                 logger.debug("Brightness HUD disabled; skipping display.")
                 return
             }
-            displayHUD(hudType: .brightness, value: brightness, isMuted: false)
+            displayHUD(hudType: .brightness, value: brightness, isMuted: false, displayID: displayID)
         }
 
         func showKeyboardBrightnessHUD(brightness: Float) {
@@ -103,6 +104,17 @@ class HUDController: ObservableObject {
     private func handleDisplayConfigurationChange() {
         logger.debug("Display configuration changed, updating HUD position.")
 
+        // An external display's level must never be redisplayed on a different panel.
+        if let displayID = lastShownDisplayID,
+           !NSScreen.screens.contains(where: {
+               ($0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value == displayID
+           })
+        {
+            hideHUD()
+            lastShownDisplayID = nil
+            return
+        }
+
         // If the HUD window exists, update its position
         if hudWindow != nil {
             updateWindowPosition()
@@ -120,13 +132,18 @@ class HUDController: ObservableObject {
 
         let windowSize = NSSize(width: 200, height: 200)
 
-        // Brightness HUD always shows on built-in display (since that's what it controls). Volume
-        // HUD respects user preference for display location.
+        // Brightness follows the controlled display; volume retains its location preference.
         let targetScreen: NSScreen
         let selectionReason: String
         #if !SANDBOX
-            if hudType == .brightness {
-                if let builtin = getBuiltinScreen() {
+            if (hudType ?? lastShownHUDType) == .brightness {
+                if let displayID = lastShownDisplayID {
+                    guard let screen = NSScreen.screens.first(where: {
+                        ($0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value == displayID
+                    }) else { return }
+                    targetScreen = screen
+                    selectionReason = "brightness external"
+                } else if let builtin = getBuiltinScreen() {
                     targetScreen = builtin
                     selectionReason = "brightness builtin"
                 } else if let main = NSScreen.main {
@@ -260,7 +277,10 @@ class HUDController: ObservableObject {
     }
 
     @MainActor
-    private func displayHUD(hudType: HUDType, value: Float, isMuted: Bool) {
+    private func displayHUD(hudType: HUDType, value: Float, isMuted: Bool, displayID: CGDirectDisplayID? = nil) {
+        let displayChanged = lastShownDisplayID != displayID
+        lastShownDisplayID = displayID
+
         // Cancel any existing hide timer
         hideTimer?.invalidate()
 
@@ -282,6 +302,7 @@ class HUDController: ObservableObject {
 
                 case .brightness:
                     hostingView == nil
+                        || displayChanged
                         || lastShownHUDType != hudType
                         || lastShownBrightness == nil
                         || abs((lastShownBrightness ?? -1) - value) > 0.0005

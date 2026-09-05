@@ -33,6 +33,9 @@
 			membershipExceptions = (
 				Assets.xcassets,
 				BrightnessMonitor.swift,
+				DDCBrightnessPacket.h,
+				ExternalBrightnessHardware.c,
+				ExternalBrightnessHardware.h,
 				MediaKeyInterceptor.swift,
 			);
 			target = 30DAC6CB2EEE1F73004F96CE /* volumeHUD (Sandbox) */;
@@ -380,6 +383,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 30C964002F0AB64600DDF7AF /* BuildNumber.xcconfig */;
 			buildSettings = {
+				SWIFT_OBJC_BRIDGING_HEADER = "volumeHUD/ExternalBrightnessHardware.h";
 				ASSETCATALOG_COMPILER_APPICON_NAME = volumeHUD;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
@@ -420,6 +424,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 30C964002F0AB64600DDF7AF /* BuildNumber.xcconfig */;
 			buildSettings = {
+				SWIFT_OBJC_BRIDGING_HEADER = "volumeHUD/ExternalBrightnessHardware.h";
 				ASSETCATALOG_COMPILER_APPICON_NAME = volumeHUD;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;

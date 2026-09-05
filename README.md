@@ -6,6 +6,12 @@ This fork adds an experimental **Keyboard Brightness HUD**, enabled by default i
 
 Build this fork to use the addition. Xcode places the app in `build/Debug/volumeHUD.app` or `build/Release/volumeHUD.app` inside the project folder. The upstream Homebrew installation described below does **not** include it. See [keyboard HUD behavior, limitations, and Mac validation](KEYBOARD-HUD.md). The upstream project description follows.
 
+## This fork: Shift controls external brightness
+
+With **Brightness HUD** enabled, **Shift + display-brightness up/down** controls a compatible external monitor and shows the classic HUD on that screen. The external screen under the pointer has priority when several are connected. Native DisplayServices and DDC/CI hardware control are supported where the monitor and connection expose them. Plain brightness keys and the existing Option+Shift fine steps keep their behavior.
+
+See [external display compatibility and verification](EXTERNAL-DISPLAY-BRIGHTNESS.md). Build output remains inside `build/`.
+
 A simple macOS app that brings back the classic volume and brightness HUDs.
 
 **PLEASE NOTE: volumeHUD is feature-complete and no longer under active development.** This is an app I built for myself and it does everything it's supposed to. I'm very glad it's found an appreciative audience, but I am not accepting PRs and no further updates are planned except to fix bugs and maintain macOS compatibility.

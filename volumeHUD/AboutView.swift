@@ -177,7 +177,7 @@ struct AboutView: View {
                             Spacer()
                                 .frame(width: 14)
 
-                            Text("Experimental, built-in display only")
+                            Text("Shift + brightness keys: compatible external display")
                                 .font(.system(size: 10))
                                 .foregroundStyle(.secondary)
                                 .opacity(0.8)

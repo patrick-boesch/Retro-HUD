@@ -71,6 +71,7 @@ final class MediaKeyInterceptor {
 
     weak var hudController: HUDController?
     weak var keyboardBrightnessMonitor: KeyboardBrightnessMonitor?
+    private let externalBrightnessController = ExternalDisplayBrightnessController()
 
     let logger: Logger = .init()
 
@@ -182,6 +183,9 @@ final class MediaKeyInterceptor {
             CGEvent.tapEnable(tap: tap, enable: true)
             isRunning = true
 
+            externalBrightnessController.hudController = hudController
+            externalBrightnessController.start()
+
             // Start monitoring for device changes
             startDeviceChangeMonitoring()
 
@@ -197,6 +201,8 @@ final class MediaKeyInterceptor {
     /// Stop intercepting media key events.
     func stop() {
         guard isRunning else { return }
+
+        externalBrightnessController.stop()
 
         // Stop device change monitoring
         stopDeviceChangeMonitoring()
@@ -247,6 +253,13 @@ final class MediaKeyInterceptor {
             if consumed { return nil }
         }
 
+        if keyState == 0x0B, keyCode == 2 || keyCode == 3, Thread.isMainThread {
+            let consumed = MainActor.assumeIsolated {
+                self.externalBrightnessController.handleKeyUp(keyCode: keyCode)
+            }
+            if consumed { return nil }
+        }
+
         // Other key releases retain their existing pass-through behavior.
         guard keyState == 0x0A else {
             return Unmanaged.passRetained(cgEvent)
@@ -275,11 +288,15 @@ final class MediaKeyInterceptor {
         case .keyboardBrightnessUp, .keyboardBrightnessDown, .keyboardBrightnessToggle:
             guard Thread.isMainThread else { return Unmanaged.passRetained(cgEvent) }
             let consumed = MainActor.assumeIsolated {
-                self.keyboardBrightnessMonitor?.handleKeyDown(keyCode: keyCode, useFineStep: useFineStep) ?? false
+                self.externalBrightnessController.suppressPendingHUD()
+                return self.keyboardBrightnessMonitor?.handleKeyDown(keyCode: keyCode, useFineStep: useFineStep) ?? false
             }
             return consumed ? nil : Unmanaged.passRetained(cgEvent)
 
         case .soundUp, .soundDown, .mute:
+            if Thread.isMainThread {
+                MainActor.assumeIsolated { self.externalBrightnessController.suppressPendingHUD() }
+            }
             logger.debug(
                 "Volume key modifiers: shift=\(shiftHeld), option=\(optionHeld), nsShift=\(shiftHeldFromNSEvent), nsOption=\(optionHeldFromNSEvent), cgShift=\(shiftHeldFromCGEvent), cgOption=\(optionHeldFromCGEvent), sessionShift=\(shiftHeldFromSession), sessionOption=\(optionHeldFromSession), cgFlags=\(eventFlags.rawValue), sessionFlags=\(sessionFlags.rawValue)",
             )
@@ -302,6 +319,20 @@ final class MediaKeyInterceptor {
             return nil
 
         case .brightnessUp, .brightnessDown:
+            if Thread.isMainThread {
+                let shiftOnly = shiftHeld && !optionHeld
+                    && modifierFlags.intersection([.command, .control]).isEmpty
+                    && eventFlags.intersection([.maskCommand, .maskControl]).isEmpty
+                    && sessionFlags.intersection([.maskCommand, .maskControl]).isEmpty
+                let consumed = MainActor.assumeIsolated {
+                    self.externalBrightnessController.handleKeyDown(
+                        keyCode: keyCode, shiftOnly: shiftOnly, isRepeat: (keyFlags & 1) != 0,
+                    )
+                }
+                if consumed { return nil }
+                MainActor.assumeIsolated { self.externalBrightnessController.suppressPendingHUD() }
+            }
+
             // Only intercept brightness if the brightness HUD feature is enabled and brightness
             // interception is still working.
             guard brightnessInterceptionWorking else {
