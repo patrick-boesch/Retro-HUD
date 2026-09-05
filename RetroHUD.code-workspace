@@ -1,12 +1,8 @@
 {
   "folders": [
     {
-      "name": "volumeHUD",
+      "name": "Retro HUD",
       "path": "."
-    },
-    {
-      "name": "homebrew-apps",
-      "path": "../homebrew-apps"
     }
   ],
   "settings": {
@@ -38,7 +34,7 @@
       "release": true,
       "venv": true
     },
-    "sweetpad.build.xcodeWorkspacePath": "volumeHUD.xcodeproj/project.xcworkspace",
+    "sweetpad.build.xcodeWorkspacePath": "RetroHUD.xcodeproj/project.xcworkspace",
     "swift.autoGenerateLaunchConfigurations": false,
     "swift.backgroundCompilation": false,
     "swift.buildPath": "./.build"

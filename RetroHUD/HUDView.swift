@@ -1,6 +1,7 @@
 //
 //  HUDView.swift
-//  by Danny Stewart (2025)
+//  Retro HUD additions by Patrick Bösch (2026)
+//  Based on volumeHUD by Danny Stewart (2025)
 //  MIT License
 //  https://github.com/dannystewart/volumeHUD
 //

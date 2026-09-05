@@ -1,6 +1,7 @@
 //
 //  HUDController.swift
-//  by Danny Stewart (2025)
+//  Retro HUD additions by Patrick Bösch (2026)
+//  Based on volumeHUD by Danny Stewart (2025)
 //  MIT License
 //  https://github.com/dannystewart/volumeHUD
 //
@@ -37,6 +38,7 @@ class HUDController: ObservableObject {
 
     @MainActor
     func showVolumeHUD(volume: Float, isMuted: Bool) {
+        guard UserDefaults.standard.bool(forKey: RetroHUDPreferences.volume) else { return }
         displayHUD(hudType: .volume, value: volume, isMuted: isMuted)
     }
 
@@ -56,6 +58,25 @@ class HUDController: ObservableObject {
             displayHUD(hudType: .keyboardBrightness, value: brightness, isMuted: false)
         }
     #endif // !SANDBOX
+
+    func preferencesDidChange() {
+        let defaults = UserDefaults.standard
+        let enabled: Bool
+        switch lastShownHUDType {
+        case .volume: enabled = defaults.bool(forKey: RetroHUDPreferences.volume)
+        case .brightness: enabled = defaults.bool(forKey: RetroHUDPreferences.brightness)
+        case .keyboardBrightness: enabled = defaults.bool(forKey: RetroHUDPreferences.keyboard)
+        case nil: enabled = true
+        }
+        if !enabled {
+            hideTimer?.invalidate()
+            hudWindow?.orderOut(nil)
+            hudWindow?.alphaValue = 1
+            isShowing = false
+        } else if isShowing {
+            updateWindowPosition(for: lastShownHUDType)
+        }
+    }
 
     @MainActor
     func startDisplayChangeMonitoring() {
@@ -155,7 +176,7 @@ class HUDController: ObservableObject {
                 }
             } else {
                 // Check user preference for volume HUD location
-                let followMouse = UserDefaults.standard.bool(forKey: "volumeHUDFollowsMouse")
+                let followMouse = UserDefaults.standard.bool(forKey: "hudFollowsMouse")
                 if followMouse {
                     if let mouse = getScreenWithMouse() {
                         targetScreen = mouse
@@ -182,7 +203,7 @@ class HUDController: ObservableObject {
             }
         #else
             // Check user preference for volume HUD location
-            let followMouse = UserDefaults.standard.bool(forKey: "volumeHUDFollowsMouse")
+            let followMouse = UserDefaults.standard.bool(forKey: "hudFollowsMouse")
             if followMouse {
                 if let mouse = getScreenWithMouse() {
                     targetScreen = mouse

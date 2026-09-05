@@ -1,7 +1,7 @@
 # Keyboard brightness HUD
 
 This fork adds a classic 16-segment HUD for the built-in keyboard backlight.
-The non-sandbox app enables **Keyboard Brightness HUD** by default; its setting
+The non-sandbox app enables **HUD → Keyboard** by default; its setting
 is independent of the display-brightness switch.
 
 ## Key presses only
@@ -44,7 +44,7 @@ the supplied, working launch-agent template with these exact pairs:
 The HUD automatically recognizes the resulting illumination keys. **If this
 mapping is already installed, keep using it; nothing else needs installing.**
 The app does not also remap or synthesize these keys. Each press is handled
-either by volumeHUD or by macOS when interception is unavailable.
+either by Retro HUD or by macOS when interception is unavailable.
 
 The template is included for setting up other Macs; the app does not install or
 overwrite a LaunchAgent automatically. Its `hidutil --set` command replaces
@@ -75,9 +75,9 @@ The keyboard monitor and settings remain excluded from the sandbox app.
 
 The shared Xcode project settings put build products inside the checkout:
 
-- `build/Debug/volumeHUD.app` for a Debug build of the `volumeHUD` scheme.
-- `build/Release/volumeHUD.app` for Release.
-- `build/Debug-Sandbox/volumeHUD.app` or `build/Release-Sandbox/volumeHUD.app`
+- `build/Debug/Retro HUD.app` for a Debug build of the `RetroHUD` scheme.
+- `build/Release/Retro HUD.app` for Release.
+- `build/Debug-Sandbox/Retro HUD.app` or `build/Release-Sandbox/Retro HUD.app`
   for the sandbox target, keeping its identically named app separate.
 
 Intermediate build files go to `build/Intermediates.noindex`. The existing
@@ -90,7 +90,7 @@ The preceding key-only version compiled and worked on the user's Mac. This
 interception/build-output revision has been reviewed statically; the authoring
 environment has no Xcode/macOS SDK or keyboard hardware.
 
-Build the existing `volumeHUD` scheme once on the Mac, then check manually:
+Build the existing `RetroHUD` scheme once on the Mac, then check manually:
 
 1. Leave the app idle for at least one minute. Change ambient lighting, allow
    idle dimming, and adjust the system keyboard-brightness slider: no keyboard HUD.
@@ -100,7 +100,7 @@ Build the existing `volumeHUD` scheme once on the Mac, then check manually:
    works. If a toggle key is available, test off/on and a held toggle.
 3. Stop pressing: the HUD fades and stays hidden. Sleep/wake and disable/re-enable
    the setting: no spontaneous HUD and no stale callback redisplay.
-4. Disable Keyboard Brightness HUD: the original keys and Apple's indicator
+4. Disable HUD → Keyboard: the original keys and Apple's indicator
    should work normally. Re-enable and verify interception resumes.
 5. Confirm that volume and enabled display-brightness HUDs still work and that
    the app was generated in the project's `build/Debug` or `build/Release`.

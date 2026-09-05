@@ -1,6 +1,7 @@
 //
 //  Logger.swift
-//  by Danny Stewart (2026)
+//  Retro HUD additions by Patrick Bösch (2026)
+//  Based on volumeHUD by Danny Stewart (2026)
 //  MIT License
 //  https://github.com/dannystewart/volumeHUD
 //
@@ -42,9 +43,9 @@ final class Logger: @unchecked Sendable {
         private let osLogger: os.Logger
     #endif // !SANDBOX
 
-    nonisolated init(category: String = "volumeHUD") {
+    nonisolated init(category: String = "Retro HUD") {
         #if canImport(os)
-            let subsystem = Bundle.main.bundleIdentifier ?? "com.dannystewart.volumeHUD"
+            let subsystem = Bundle.main.bundleIdentifier ?? "com.patrickboesch.retrohud"
             osLogger = os.Logger(subsystem: subsystem, category: category)
         #endif // !SANDBOX
     }

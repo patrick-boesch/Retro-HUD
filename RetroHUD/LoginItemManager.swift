@@ -1,6 +1,7 @@
 //
 //  LoginItemManager.swift
-//  by Danny Stewart (2025)
+//  Retro HUD additions by Patrick Bösch (2026)
+//  Based on volumeHUD by Danny Stewart (2025)
 //  MIT License
 //  https://github.com/dannystewart/volumeHUD
 //
@@ -8,7 +9,6 @@
 import Combine
 import Foundation
 import ServiceManagement
-import SwiftUI
 
 // MARK: - LoginItemManager
 
@@ -38,10 +38,13 @@ class LoginItemManager: ObservableObject {
         logger.debug("Login item status: \(service.status)")
     }
 
+    var requiresApproval: Bool { service.status == .requiresApproval }
+
     /// Sets the login item state
     func setEnabled(_ enabled: Bool) {
         guard !isUpdatingFromSystem else { return }
-        guard enabled != isEnabled else { return }
+        if enabled, service.status == .enabled { return }
+        if !enabled, service.status == .notRegistered { return }
 
         do {
             if enabled {
@@ -56,10 +59,8 @@ class LoginItemManager: ObservableObject {
         } catch {
             logger.error("Failed to set login item: \(error)")
             lastError = error.localizedDescription
+            updateStatus()
         }
     }
 }
 
-extension EnvironmentValues {
-    @Entry var loginItemManager: LoginItemManager?
-}

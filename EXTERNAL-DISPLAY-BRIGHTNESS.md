@@ -1,7 +1,7 @@
 # External display brightness
 
-Enable **Brightness HUD** and grant Accessibility access to the running
-volumeHUD build. The feature is available in the non-sandbox app.
+Enable **HUD → Brightness** in the menu bar and grant Accessibility access to the running
+Retro HUD build. The feature is available in the non-sandbox app.
 
 | Keys | Target |
 | --- | --- |
@@ -41,7 +41,7 @@ Display-to-service mapping uses the registry location or an unambiguous hardware
 identity. Identical displays without distinguishable location/identity are
 skipped instead of guessing. Handles retain a display UUID and are rechecked
 before access. Discovery/transport references and their MIT license are included
-in [ThirdPartyNotices.txt](volumeHUD/ThirdPartyNotices.txt), also bundled with the app.
+in [ThirdPartyNotices.txt](RetroHUD/ThirdPartyNotices.txt), also bundled with the app.
 
 ## Responsiveness and lifecycle
 
@@ -64,7 +64,7 @@ The authoring environment has no macOS SDK/Xcode or monitor hardware.
 Portable C protocol checks cover checksums, response type/status/VCP, zero maxima,
 out-of-range values, endpoints, and maxima greater than 255.
 
-Build the existing `volumeHUD` scheme once on the Mac and check manually:
+Build the existing `RetroHUD` scheme once on the Mac and check manually:
 
 1. Enable Brightness HUD. Shift + up/down changes a supported external monitor
    and shows the classic HUD there; plain keys and Option+Shift retain their behavior.
@@ -76,8 +76,8 @@ Build the existing `volumeHUD` scheme once on the Mac and check manually:
    writes or spontaneous HUD; volume and keyboard-brightness HUDs still work.
 5. Try an unsupported display or disable its DDC/CI option: no false success HUD.
 
-Build products still go to `build/Debug/volumeHUD.app` and
-`build/Release/volumeHUD.app`. Use the existing Xcode window; no simulators or UI
+Build products still go to `build/Debug/Retro HUD.app` and
+`build/Release/Retro HUD.app`. Use the existing Xcode window; no simulators or UI
 test loops. Stop stalled verification and report the concrete failure.
 
 Portable protocol check, from the project root:

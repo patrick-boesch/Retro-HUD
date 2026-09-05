@@ -1,3 +1,4 @@
+// Retro HUD by Patrick Bösch (2026)
 // MIT License
 // DDC transport and Apple Silicon registry discovery informed by MonitorControl:
 // Copyright © MonitorControl. @JoniVR, @theOneyouseek, @waydabber and others.
@@ -6,6 +7,7 @@
 #include "ExternalBrightnessHardware.h"
 #include "DDCBrightnessPacket.h"
 #include <CoreFoundation/CoreFoundation.h>
+#include <ColorSync/ColorSync.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/graphics/IOGraphicsLib.h>
 #include <IOKit/i2c/IOI2CInterface.h>
@@ -18,23 +20,23 @@
 #include <string.h>
 #include <unistd.h>
 
-typedef bool (*VHCanChange)(CGDirectDisplayID);
-typedef int (*VHGetBrightness)(CGDirectDisplayID, float *);
-typedef int (*VHSetBrightness)(CGDirectDisplayID, float);
-typedef CFDictionaryRef (*VHCopyDisplayInfo)(CGDirectDisplayID);
+typedef bool (*RHCanChange)(CGDirectDisplayID);
+typedef int (*RHGetBrightness)(CGDirectDisplayID, float *);
+typedef int (*RHSetBrightness)(CGDirectDisplayID, float);
+typedef CFDictionaryRef (*RHCopyDisplayInfo)(CGDirectDisplayID);
 #if defined(__arm64__)
-typedef CFTypeRef (*VHCreateAVService)(CFAllocatorRef, io_service_t);
-typedef IOReturn (*VHAVI2C)(CFTypeRef, uint32_t, uint32_t, void *, uint32_t);
-static VHCreateAVService createAVService;
-static VHAVI2C avRead, avWrite;
+typedef CFTypeRef (*RHCreateAVService)(CFAllocatorRef, io_service_t);
+typedef IOReturn (*RHAVI2C)(CFTypeRef, uint32_t, uint32_t, void *, uint32_t);
+static RHCreateAVService createAVService;
+static RHAVI2C avRead, avWrite;
 #endif
-static VHCanChange canChange;
-static VHGetBrightness getBrightness;
-static VHSetBrightness setBrightness;
-static VHCopyDisplayInfo copyDisplayInfo;
+static RHCanChange canChange;
+static RHGetBrightness getBrightness;
+static RHSetBrightness setBrightness;
+static RHCopyDisplayInfo copyDisplayInfo;
 static pthread_once_t loadOnce = PTHREAD_ONCE_INIT;
 
-struct VHExternalBrightnessDevice {
+struct RHExternalBrightnessDevice {
     CGDirectDisplayID display;
     CFUUIDRef uuid;
     bool native;
@@ -46,27 +48,27 @@ struct VHExternalBrightnessDevice {
 #endif
 };
 
-static void VHLoadFunctions(void) {
+static void RHLoadFunctions(void) {
     // Keep framework handles loaded for the lifetime of these function pointers.
     void *native = dlopen("/System/Library/PrivateFrameworks/DisplayServices.framework/DisplayServices", RTLD_LAZY | RTLD_LOCAL);
     if (native) {
-        canChange = (VHCanChange)dlsym(native, "DisplayServicesCanChangeBrightness");
-        getBrightness = (VHGetBrightness)dlsym(native, "DisplayServicesGetBrightness");
-        setBrightness = (VHSetBrightness)dlsym(native, "DisplayServicesSetBrightness");
+        canChange = (RHCanChange)dlsym(native, "DisplayServicesCanChangeBrightness");
+        getBrightness = (RHGetBrightness)dlsym(native, "DisplayServicesGetBrightness");
+        setBrightness = (RHSetBrightness)dlsym(native, "DisplayServicesSetBrightness");
     }
     void *core = dlopen("/System/Library/Frameworks/CoreDisplay.framework/CoreDisplay", RTLD_LAZY | RTLD_LOCAL);
-    if (core) copyDisplayInfo = (VHCopyDisplayInfo)dlsym(core, "CoreDisplay_DisplayCreateInfoDictionary");
+    if (core) copyDisplayInfo = (RHCopyDisplayInfo)dlsym(core, "CoreDisplay_DisplayCreateInfoDictionary");
 #if defined(__arm64__)
     void *io = dlopen("/System/Library/Frameworks/IOKit.framework/IOKit", RTLD_LAZY | RTLD_LOCAL);
     if (io) {
-        createAVService = (VHCreateAVService)dlsym(io, "IOAVServiceCreateWithService");
-        avRead = (VHAVI2C)dlsym(io, "IOAVServiceReadI2C");
-        avWrite = (VHAVI2C)dlsym(io, "IOAVServiceWriteI2C");
+        createAVService = (RHCreateAVService)dlsym(io, "IOAVServiceCreateWithService");
+        avRead = (RHAVI2C)dlsym(io, "IOAVServiceReadI2C");
+        avWrite = (RHAVI2C)dlsym(io, "IOAVServiceWriteI2C");
     }
 #endif
 }
 
-static bool VHIsSameDisplay(VHExternalBrightnessDevice *device) {
+static bool RHIsSameDisplay(RHExternalBrightnessDevice *device) {
     if (!CGDisplayIsActive(device->display) || CGDisplayIsBuiltin(device->display)) return false;
     CFUUIDRef uuid = CGDisplayCreateUUIDFromDisplayID(device->display);
     bool same = uuid && device->uuid && CFEqual(uuid, device->uuid);
@@ -74,7 +76,7 @@ static bool VHIsSameDisplay(VHExternalBrightnessDevice *device) {
     return same;
 }
 
-static CFStringRef VHDisplayLocation(CGDirectDisplayID display) {
+static CFStringRef RHDisplayLocation(CGDirectDisplayID display) {
     if (!copyDisplayInfo) return NULL;
     CFDictionaryRef info = copyDisplayInfo(display);
     if (!info) return NULL;
@@ -84,7 +86,7 @@ static CFStringRef VHDisplayLocation(CGDirectDisplayID display) {
     return location;
 }
 
-static bool VHUniqueIdentity(CGDirectDisplayID display) {
+static bool RHUniqueIdentity(CGDirectDisplayID display) {
     CGDirectDisplayID displays[32];
     uint32_t count = 0, matches = 0;
     if (CGGetOnlineDisplayList(32, displays, &count) != kCGErrorSuccess) return false;
@@ -98,7 +100,7 @@ static bool VHUniqueIdentity(CGDirectDisplayID display) {
 }
 
 #if defined(__arm64__)
-static bool VHFramebufferMatches(io_service_t entry, CGDirectDisplayID display, CFStringRef location) {
+static bool RHFramebufferMatches(io_service_t entry, CGDirectDisplayID display, CFStringRef location) {
     io_string_t path = {0};
     if (location && IORegistryEntryGetPath(entry, kIOServicePlane, path) == KERN_SUCCESS) {
         CFStringRef candidate = CFStringCreateWithCString(NULL, path, kCFStringEncodingUTF8);
@@ -107,7 +109,7 @@ static bool VHFramebufferMatches(io_service_t entry, CGDirectDisplayID display, 
         if (exact) return true;
     }
     // Identity fallback is permitted only when no identical display can be confused with it.
-    if (!VHUniqueIdentity(display)) return false;
+    if (!RHUniqueIdentity(display)) return false;
     CFTypeRef value = IORegistryEntryCreateCFProperty(entry, CFSTR("EDID UUID"), NULL, 0);
     char uuid[128] = {0};
     bool valid = value && CFGetTypeID(value) == CFStringGetTypeID() &&
@@ -129,7 +131,7 @@ static bool VHFramebufferMatches(io_service_t entry, CGDirectDisplayID display, 
     return (uint32_t)serial == CGDisplaySerialNumber(display);
 }
 
-static CFTypeRef VHFindAVService(CGDirectDisplayID display) {
+static CFTypeRef RHFindAVService(CGDirectDisplayID display) {
     if (!createAVService || !avRead || !avWrite) return NULL;
     io_registry_entry_t root = IORegistryGetRootEntry(kIOMainPortDefault);
     io_iterator_t iterator = IO_OBJECT_NULL;
@@ -137,7 +139,7 @@ static CFTypeRef VHFindAVService(CGDirectDisplayID display) {
     kern_return_t result = IORegistryEntryCreateIterator(root, kIOServicePlane, kIORegistryIterateRecursively, &iterator);
     IOObjectRelease(root);
     if (result != KERN_SUCCESS) return NULL;
-    CFStringRef location = VHDisplayLocation(display);
+    CFStringRef location = RHDisplayLocation(display);
     CFTypeRef found = NULL;
     unsigned matches = 0;
     bool framebufferMatches = false;
@@ -146,7 +148,7 @@ static CFTypeRef VHFindAVService(CGDirectDisplayID display) {
         io_name_t name = {0};
         if (IORegistryEntryGetName(entry, name) == KERN_SUCCESS) {
             if (strcmp(name, "AppleCLCD2") == 0 || strcmp(name, "IOMobileFramebufferShim") == 0) {
-                framebufferMatches = VHFramebufferMatches(entry, display, location);
+                framebufferMatches = RHFramebufferMatches(entry, display, location);
             } else if (strcmp(name, "DCPAVServiceProxy") == 0 && framebufferMatches) {
                 CFTypeRef where = IORegistryEntryCreateCFProperty(entry, CFSTR("Location"), NULL, 0);
                 if (where && CFEqual(where, CFSTR("External"))) {
@@ -168,7 +170,7 @@ static CFTypeRef VHFindAVService(CGDirectDisplayID display) {
     return found;
 }
 
-static bool VHDDCRead(VHExternalBrightnessDevice *device, uint16_t *current) {
+static bool RHDDCRead(RHExternalBrightnessDevice *device, uint16_t *current) {
     // IOAVService read-request checksum differs on some paths. Try each form once.
     for (unsigned attempt = 0; attempt < 2; attempt++) {
         uint8_t request[4] = {0x82, 0x01, 0x10, 0};
@@ -177,12 +179,12 @@ static bool VHDDCRead(VHExternalBrightnessDevice *device, uint16_t *current) {
         if (avWrite(device->service, 0x37, 0x51, request, sizeof(request)) != KERN_SUCCESS) continue;
         usleep(50000);
         if (avRead(device->service, 0x37, 0, reply, sizeof(reply)) == KERN_SUCCESS &&
-            VHDDCParseBrightness(reply, current, &device->maximum)) return true;
+            RHDDCParseBrightness(reply, current, &device->maximum)) return true;
     }
     return false;
 }
 
-static bool VHDDCWrite(VHExternalBrightnessDevice *device, uint16_t value) {
+static bool RHDDCWrite(RHExternalBrightnessDevice *device, uint16_t value) {
     uint8_t request[6] = {0x84, 0x03, 0x10, (uint8_t)(value >> 8), (uint8_t)value, 0};
     request[5] = 0x6e ^ 0x51;
     for (unsigned i = 0; i < 5; i++) request[5] ^= request[i];
@@ -192,17 +194,17 @@ static bool VHDDCWrite(VHExternalBrightnessDevice *device, uint16_t value) {
     return success;
 }
 #else
-static uint32_t VHNumber(CFDictionaryRef info, CFStringRef key) {
+static uint32_t RHNumber(CFDictionaryRef info, CFStringRef key) {
     CFTypeRef value = CFDictionaryGetValue(info, key);
     int64_t number = 0;
     if (value && CFGetTypeID(value) == CFNumberGetTypeID()) CFNumberGetValue(value, kCFNumberSInt64Type, &number);
     return (uint32_t)number;
 }
 
-static io_service_t VHFindFramebuffer(CGDirectDisplayID display) {
+static io_service_t RHFindFramebuffer(CGDirectDisplayID display) {
     io_iterator_t iterator = IO_OBJECT_NULL;
     if (IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching("IOFramebuffer"), &iterator) != KERN_SUCCESS) return IO_OBJECT_NULL;
-    CFStringRef location = VHDisplayLocation(display);
+    CFStringRef location = RHDisplayLocation(display);
     io_service_t found = IO_OBJECT_NULL, entry;
     unsigned matches = 0;
     while ((entry = IOIteratorNext(iterator))) {
@@ -210,10 +212,10 @@ static io_service_t VHFindFramebuffer(CGDirectDisplayID display) {
         if (info) {
             CFTypeRef candidate = CFDictionaryGetValue(info, CFSTR(kIODisplayLocationKey));
             bool exact = location && candidate && CFEqual(location, candidate);
-            bool identity = VHUniqueIdentity(display) &&
-                VHNumber(info, CFSTR(kDisplayVendorID)) == CGDisplayVendorNumber(display) &&
-                VHNumber(info, CFSTR(kDisplayProductID)) == CGDisplayModelNumber(display) &&
-                VHNumber(info, CFSTR(kDisplaySerialNumber)) == CGDisplaySerialNumber(display);
+            bool identity = RHUniqueIdentity(display) &&
+                RHNumber(info, CFSTR(kDisplayVendorID)) == CGDisplayVendorNumber(display) &&
+                RHNumber(info, CFSTR(kDisplayProductID)) == CGDisplayModelNumber(display) &&
+                RHNumber(info, CFSTR(kDisplaySerialNumber)) == CGDisplaySerialNumber(display);
             if (exact || identity) {
                 matches++;
                 if (found) IOObjectRelease(found);
@@ -230,7 +232,7 @@ static io_service_t VHFindFramebuffer(CGDirectDisplayID display) {
     return found;
 }
 
-static bool VHSendI2C(VHExternalBrightnessDevice *device, uint8_t *send, uint32_t sendCount, uint8_t *reply) {
+static bool RHSendI2C(RHExternalBrightnessDevice *device, uint8_t *send, uint32_t sendCount, uint8_t *reply) {
     IOItemCount count = 0;
     if (IOFBGetI2CInterfaceCount(device->framebuffer, &count) != KERN_SUCCESS) return false;
     for (IOOptionBits bus = 0; bus < count; bus++) {
@@ -268,66 +270,66 @@ static bool VHSendI2C(VHExternalBrightnessDevice *device, uint8_t *send, uint32_
     return false;
 }
 
-static bool VHDDCRead(VHExternalBrightnessDevice *device, uint16_t *current) {
+static bool RHDDCRead(RHExternalBrightnessDevice *device, uint16_t *current) {
     uint8_t send[5] = {0x51, 0x82, 0x01, 0x10, 0};
     send[4] = 0x6e ^ send[0] ^ send[1] ^ send[2] ^ send[3];
     uint8_t reply[11] = {0};
-    return VHSendI2C(device, send, sizeof(send), reply) && VHDDCParseBrightness(reply, current, &device->maximum);
+    return RHSendI2C(device, send, sizeof(send), reply) && RHDDCParseBrightness(reply, current, &device->maximum);
 }
 
-static bool VHDDCWrite(VHExternalBrightnessDevice *device, uint16_t value) {
+static bool RHDDCWrite(RHExternalBrightnessDevice *device, uint16_t value) {
     uint8_t send[7] = {0x51, 0x84, 0x03, 0x10, (uint8_t)(value >> 8), (uint8_t)value, 0};
     send[6] = 0x6e;
     for (unsigned i = 0; i < 6; i++) send[6] ^= send[i];
     usleep(10000);
-    bool success = VHSendI2C(device, send, sizeof(send), NULL);
+    bool success = RHSendI2C(device, send, sizeof(send), NULL);
     if (success) usleep(50000);
     return success;
 }
 #endif
 
-VHExternalBrightnessDevice *VHExternalBrightnessOpen(CGDirectDisplayID display) {
-    pthread_once(&loadOnce, VHLoadFunctions);
+RHExternalBrightnessDevice *RHExternalBrightnessOpen(CGDirectDisplayID display) {
+    pthread_once(&loadOnce, RHLoadFunctions);
     if (CGDisplayIsBuiltin(display) || !CGDisplayIsActive(display)) return NULL;
-    VHExternalBrightnessDevice *device = calloc(1, sizeof(*device));
+    RHExternalBrightnessDevice *device = calloc(1, sizeof(*device));
     if (!device) return NULL;
     device->display = display;
     device->uuid = CGDisplayCreateUUIDFromDisplayID(display);
     float current = 0;
     device->native = canChange && getBrightness && setBrightness && canChange(display);
-    if (device->native && VHExternalBrightnessRead(device, &current)) return device;
+    if (device->native && RHExternalBrightnessRead(device, &current)) return device;
     device->native = false;
 #if defined(__arm64__)
-    device->service = VHFindAVService(display);
+    device->service = RHFindAVService(display);
     bool available = device->service != NULL;
 #else
-    device->framebuffer = VHFindFramebuffer(display);
+    device->framebuffer = RHFindFramebuffer(display);
     bool available = device->framebuffer != IO_OBJECT_NULL;
 #endif
-    if (available && VHExternalBrightnessRead(device, &current)) return device;
-    VHExternalBrightnessClose(device);
+    if (available && RHExternalBrightnessRead(device, &current)) return device;
+    RHExternalBrightnessClose(device);
     return NULL;
 }
 
-bool VHExternalBrightnessRead(VHExternalBrightnessDevice *device, float *value) {
-    if (!VHIsSameDisplay(device)) return false;
+bool RHExternalBrightnessRead(RHExternalBrightnessDevice *device, float *value) {
+    if (!RHIsSameDisplay(device)) return false;
     if (device->native) {
         return getBrightness(device->display, value) == 0 && isfinite(*value) && *value >= 0 && *value <= 1;
     }
     uint16_t current = 0;
-    if (!VHDDCRead(device, &current)) return false;
+    if (!RHDDCRead(device, &current)) return false;
     *value = (float)current / device->maximum;
     return true;
 }
 
-bool VHExternalBrightnessWrite(VHExternalBrightnessDevice *device, float value) {
-    if (!VHIsSameDisplay(device) || !isfinite(value) || value < 0 || value > 1) return false;
+bool RHExternalBrightnessWrite(RHExternalBrightnessDevice *device, float value) {
+    if (!RHIsSameDisplay(device) || !isfinite(value) || value < 0 || value > 1) return false;
     if (device->native) return setBrightness(device->display, value) == 0;
     if (!device->maximum) return false;
-    return VHDDCWrite(device, (uint16_t)lroundf(value * device->maximum));
+    return RHDDCWrite(device, (uint16_t)lroundf(value * device->maximum));
 }
 
-void VHExternalBrightnessClose(VHExternalBrightnessDevice *device) {
+void RHExternalBrightnessClose(RHExternalBrightnessDevice *device) {
     if (!device) return;
     if (device->uuid) CFRelease(device->uuid);
 #if defined(__arm64__)

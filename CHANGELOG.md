@@ -1,3 +1,16 @@
+# Retro HUD — unreleased 4.0.0
+
+- Rebrand the app, Xcode project/schemes, source folder and icon bundle as Retro HUD.
+- Credit Patrick Bösch and preserve Danny Stewart's volumeHUD authorship.
+- Move preferences into a native status-item menu; use the standard macOS About panel.
+- Add a real Volume HUD toggle and optional launch notification.
+- Preserve existing bundle identity and preferences; migrate the placement preference key.
+- Import and link ColorSync for display UUID access in the external brightness backend.
+
+The following entries document the original volumeHUD history.
+
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

@@ -1,6 +1,7 @@
 //
 //  MediaKeyInterceptor.swift
-//  by Danny Stewart (2025)
+//  Retro HUD additions by Patrick Bösch (2026)
+//  Based on volumeHUD by Danny Stewart (2025)
 //  MIT License
 //  https://github.com/dannystewart/volumeHUD
 //
@@ -130,6 +131,13 @@ final class MediaKeyInterceptor {
     deinit {
         // Note: stop() must be called before deinit since we're @MainActor DisplayServices handle
         // is closed in stop()
+    }
+
+    func preferencesDidChange() {
+        volumeControlState = nil
+        volumeInterceptionWorking = true
+        brightnessInterceptionWorking = true
+        externalBrightnessController.preferencesDidChange()
     }
 
     // MARK: Public Methods
@@ -301,7 +309,7 @@ final class MediaKeyInterceptor {
                 "Volume key modifiers: shift=\(shiftHeld), option=\(optionHeld), nsShift=\(shiftHeldFromNSEvent), nsOption=\(optionHeldFromNSEvent), cgShift=\(shiftHeldFromCGEvent), cgOption=\(optionHeldFromCGEvent), sessionShift=\(shiftHeldFromSession), sessionOption=\(optionHeldFromSession), cgFlags=\(eventFlags.rawValue), sessionFlags=\(sessionFlags.rawValue)",
             )
             // Check if volume interception is still working
-            guard volumeInterceptionWorking else {
+            guard UserDefaults.standard.bool(forKey: RetroHUDPreferences.volume), volumeInterceptionWorking else {
                 return Unmanaged.passRetained(cgEvent) // Pass through to system
             }
 
@@ -335,7 +343,7 @@ final class MediaKeyInterceptor {
 
             // Only intercept brightness if the brightness HUD feature is enabled and brightness
             // interception is still working.
-            guard brightnessInterceptionWorking else {
+            guard UserDefaults.standard.bool(forKey: RetroHUDPreferences.brightness), brightnessInterceptionWorking else {
                 return Unmanaged.passRetained(cgEvent) // Pass through to system
             }
 
@@ -353,6 +361,7 @@ final class MediaKeyInterceptor {
 
     /// Handle a volume key press by adjusting volume and showing our HUD.
     private func handleVolumeKey(keyType: NXKeyType, useFineStep: Bool, shiftHeld: Bool, optionHeld: Bool) {
+        guard UserDefaults.standard.bool(forKey: RetroHUDPreferences.volume) else { return }
         let step = useFineStep ? fineStep : standardStep
         let shouldPlayFeedback = shouldPlayVolumeFeedback(shiftHeld: shiftHeld, optionHeld: optionHeld)
 
@@ -383,6 +392,7 @@ final class MediaKeyInterceptor {
 
     /// Handle a brightness key press by adjusting brightness and showing our HUD.
     private func handleBrightnessKey(keyType: NXKeyType, useFineStep: Bool) {
+        guard UserDefaults.standard.bool(forKey: RetroHUDPreferences.brightness) else { return }
         let step = useFineStep ? fineStep : standardStep
 
         switch keyType {

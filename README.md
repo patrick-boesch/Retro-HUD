@@ -1,89 +1,117 @@
-# volumeHUD
+# Retro HUD
 
-## This fork: keyboard brightness HUD
+**Retro HUD by Patrick Bösch, based on volumeHUD by Danny Stewart.**
 
-This fork adds an experimental **Keyboard Brightness HUD**, enabled by default in the non-sandbox app. It reuses the classic 16-segment overlay for the built-in keyboard and can be switched off independently in settings. **Only keyboard-illumination key presses trigger it**; automatic brightness, idle dimming, and slider changes do not start a HUD. It uses the existing Accessibility-authorized key tap to adjust the backlight directly and suppress Apple's keyboard indicator. If keyboard control is unavailable, it passes keys to macOS so they keep working. The supplied [standard key-remapping template](extras/com.local.KeyRemapping.plist) works with the same event path.
+A macOS menu-bar app that restores the classic volume, display-brightness and
+keyboard-brightness overlays. This repository continues development under the
+Retro HUD name. The original volumeHUD authorship and MIT license are preserved.
 
-Build this fork to use the addition. Xcode places the app in `build/Debug/volumeHUD.app` or `build/Release/volumeHUD.app` inside the project folder. The upstream Homebrew installation described below does **not** include it. See [keyboard HUD behavior, limitations, and Mac validation](KEYBOARD-HUD.md). The upstream project description follows.
+## Menu bar
 
-## This fork: Shift controls external brightness
+Click the Retro HUD icon to open the native macOS menu. Checked items are enabled.
 
-With **Brightness HUD** enabled, **Shift + display-brightness up/down** controls a compatible external monitor and shows the classic HUD on that screen. The external screen under the pointer has priority when several are connected. Native DisplayServices and DDC/CI hardware control are supported where the monitor and connection expose them. Plain brightness keys and the existing Option+Shift fine steps keep their behavior.
+- **Open at Login**
+- **HUD**
+  - **Brightness**
+  - **Keyboard**
+  - **Volume**
+- **Follow Mouse**
+- **Relative Position**
+- **Launch Notification**
+- **About Retro HUD**
+- **Quit Retro HUD**
 
-See [external display compatibility and verification](EXTERNAL-DISPLAY-BRIGHTNESS.md). Build output remains inside `build/`.
+There are no settings in the About panel. It uses macOS's standard About panel
+and displays Patrick Bösch's authorship, Danny Stewart's original work, version,
+build and project links.
 
-A simple macOS app that brings back the classic volume and brightness HUDs.
+Disabling a HUD stops its custom monitoring and returns its keys to macOS.
+Volume and Keyboard are enabled by default; Brightness is opt-in. The sandbox
+target exposes only Volume; its Brightness and Keyboard menu items are disabled.
 
-**PLEASE NOTE: volumeHUD is feature-complete and no longer under active development.** This is an app I built for myself and it does everything it's supposed to. I'm very glad it's found an appreciative audience, but I am not accepting PRs and no further updates are planned except to fix bugs and maintain macOS compatibility.
+Follow Mouse selects the mouse's screen for volume and keyboard overlays.
+Brightness overlays stay on the display being controlled. Relative Position
+uses 17% of screen height; disabling it uses the existing fixed bottom offset.
+The optional launch notification is off by default.
 
-## Why This Exists
+## Brightness keys
 
-With macOS Tahoe, Apple revamped Control Center and replaced the classic volume and brightness indicators of 25 years with tiny popovers in the corner of the screen, even smaller than notifications. They're hard to see, especially against light backgrounds, and they disappear before I remember where to look. Even after months on the Tahoe beta I haven't gotten used to them. It's bad UI.
+| Keys | Behavior |
+| --- | --- |
+| Display brightness ± | Existing built-in display control |
+| Shift + display brightness ± | Compatible external display |
+| Option + Shift + display brightness ± | Existing fine steps for the built-in display |
+| Keyboard illumination keys | Keyboard brightness and classic keyboard HUD |
 
-So I did what any sane person would do: I picked up Xcode and wrote my first ever Mac app to bring back the classic macOS HUDs we all know and love (except Apple, apparently). They do what any good system indicator should do: they show you the level when you change it and then they go away. And get this—you can actually *see them*. A groundbreaking feature in 2025.
+For multiple external monitors, the compatible external display under the mouse
+has priority. Supported external hardware uses native DisplayServices or DDC/CI.
+Keyboard overlays appear only after illumination-key presses; there is no idle
+keyboard polling. Supported intercepted controls suppress Apple's indicator.
 
-## What It Looks Like
+See [keyboard behavior and mapping](KEYBOARD-HUD.md) and
+[external-display compatibility](EXTERNAL-DISPLAY-BRIGHTNESS.md).
+The supplied [key-remapping template](extras/com.local.KeyRemapping.plist) remains
+available; existing working mappings need no reinstall.
 
-<img src="Images/volumeHUD-demo.gif" alt="volumeHUD Demo" height="300"></img>
+## Build and upgrade
 
-## Usage
+Open **RetroHUD.xcodeproj** and select the **RetroHUD** scheme.
+The application is generated inside the checkout:
 
-Just launch the app! You should see a notification that it started, and you can begin enjoying your new (old) volume HUD right away. If you launch the app a second time, you'll get a window where you can set it to open at login, configure HUD preferences, and quit. It will also show when an update is available.
+- Debug: `build/Debug/Retro HUD.app`
+- Release: `build/Release/Retro HUD.app`
+- Sandbox: `build/Debug-Sandbox/Retro HUD.app` or `build/Release-Sandbox/Retro HUD.app`
 
-<img src="Images/volumeHUD-settings.png" alt="volumeHUD Settings" height="300"></img>
+The source folder, shared schemes, icon bundle, editor workspace and lint
+configuration use the RetroHUD name. Your checkout's enclosing folder can keep
+its existing name. Quit the older running app before launching the renamed build.
 
-As of version 2.0, volumeHUD supports brightness. It is **off by default** (this is *volumeHUD*, after all), and it is **experimental and unsupported**. It will only work for built-in displays, and it may not be bulletproof for automatic changes like power source or ambient light, though it does mostly catch these.
+The technical bundle identifiers deliberately stay unchanged to retain the
+existing defaults domain, login registration and app identity. The old
+`volumeHUDFollowsMouse` preference is migrated to `hudFollowsMouse`; other HUD
+and position preferences retain their values. macOS manages permissions and may
+ask to approve a newly signed or moved build.
 
-As of version 3.0, **volumeHUD hides the system HUD**. It does this by intercepting the volume/brightness keys and handling volume/brightness changes directly, instead of having the OS do it. There is a safety check to make sure the volume/brightness has actually changed after you press a key; if not, the app assumes key interception is not working and disables it until a device change or the app is restarted. This ensures you can still change volume or brightness even if this doesn't work on your system.
+The display-UUID C build error is corrected by importing **ColorSync** and linking
+**ColorSync.framework** in the full app target. The previous declaration was not
+provided by CoreGraphics.
 
-## Installation
+## Repository name
 
-You can download it from the repo, but I strongly recommend installing via Homebrew, as that will handle updates for you. It's my first Swift app, so I don't want you to be left with any lingering bugs.
+To rename the repository, open its GitHub
+**Settings → General**, change **Repository name** to `RetroHUD`, then choose
+**Rename**. Afterward update a local checkout with:
 
-```bash
-brew install dannystewart/apps/volumehud
+```sh
+git remote set-url origin https://github.com/patrick-boesch/RetroHUD.git
 ```
 
-You can uninstall with `brew uninstall volumehud`, which should remove all traces of the app, including preferences and login item. No permissions should be left behind either once the app is gone.
+The current [repository link](https://github.com/patrick-boesch/volumeHUD) remains
+valid through GitHub's redirect after renaming. The app no longer polls the
+original author's releases or directs users to install the original Homebrew app.
 
-## Permissions
+## Verification
 
-I worked hard to ensure the app could function without requiring any permissions. It will request two that are **optional but recommended**.
+The editing environment has no Xcode/macOS SDK. The ColorSync declaration was
+checked against its SDK header; the full app requires a Mac build and a manual
+menu/hardware check.
 
-- **Notifications** are used only to confirm the app has started (and only when launched manually, not as a login item). Feel free to disable if you find them unnecessary.
-- **Accessibility** is needed for full functionality. The app will work without it, but you lose some features:
-  - The system HUD will still appear alongside volumeHUD.
-  - The HUD won't appear if you go below 0% or above 100% since it can't use key presses to determine if levels should have changed.
-  - Brightness checks may be less reliable since key timing can't be used to check whether a change is user-initiated.
+Build the existing RetroHUD scheme once, then verify menu checkmarks, persistence,
+all three HUD toggles, Open at Login, placement, About and Quit. Check that
+disabled controls use macOS behavior and that Shift still controls a compatible
+external monitor. 
+The portable DDC response test can run without a macOS SDK:
 
-Apart from that, all other features should work.
-
-## Troubleshooting
-
-If you're experiencing inconsistent behavior, the most likely cause is lack of Accessibility permissions, and the first thing I would recommend is a full reset. The most thorough way to do this is to uninstall and reinstall:
-
-1. Completely quit volumeHUD by opening it a second time and clicking **Quit volumeHUD** or by running `pkill -f volumeHUD`
-2. Open **System Settings** → **Privacy & Security** → **Accessibility**.
-3. Find **volumeHUD** in the list, select it, and click the minus (-) button at the bottom. Make sure it's removed from the list.
-4. Assuming you installed with Homebrew, run `brew uninstall volumehud` to remove the login item, the app, and any remaining files.
-5. Run `brew install dannystewart/apps/volumehud` to reinstall.
-6. Reopen **volumeHUD.app**. You should be prompted with "this application has been downloaded from the internet" first, followed by a request for Accessibility permissions.
-7. Open **System Settings** like it says to do, make sure **volumeHUD** is in the list now, and toggle it on. If it says you'll need to quit and reopen, do that and try again.
-
-Alternatively, you can do the same reset from the command line:
-
-```bash
-pkill -f volumeHUD
-tccutil reset Accessibility com.dannystewart.volumehud
-tccutil reset ListenEvent com.dannystewart.volumehud
-brew uninstall volumehud
-brew install dannystewart/apps/volumehud
+```sh
+mkdir -p build
+cc -std=c11 -Wall -Wextra -Werror Tests/DDCBrightnessPacketTests.c -o build/ddc-packet-tests
+./build/ddc-packet-tests
 ```
 
-Then run the app again, grant the requested permissions, and triple-check everything in **System Settings**.
+## Credits and license
 
-## License
-
-This project is open source under the [MIT License](./LICENSE). You're free to do what you want with it, but credit would be appreciated.
-
-<a href="https://www.buymeacoffee.com/dannystewart" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-blue.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+Retro HUD additions: **Patrick Bösch, 2026**. Original
+[volumeHUD](https://github.com/dannystewart/volumeHUD): **Danny Stewart, 2025**.
+Released under the [MIT License](LICENSE). MonitorControl-derived transport
+notices are included in [ThirdPartyNotices.txt](RetroHUD/ThirdPartyNotices.txt)
+and bundled with the application.

@@ -1,3 +1,4 @@
+// Retro HUD by Patrick Bösch (2026)
 // MIT License
 
 #if !SANDBOX
@@ -34,7 +35,7 @@
             var adjustment = ExternalBrightnessAdjustment()
         }
 
-        private let queue = DispatchQueue(label: "volumeHUD.externalBrightness", qos: .userInitiated)
+        private let queue = DispatchQueue(label: "RetroHUD.externalBrightness", qos: .userInitiated)
         private let lock = NSLock()
         private let completion: @Sendable (UInt64, CGDirectDisplayID, Float) -> Void
         private var generation: UInt64 = 0
@@ -51,7 +52,7 @@
         }
 
         deinit {
-            for device in devices.values { VHExternalBrightnessClose(device) }
+            for device in devices.values { RHExternalBrightnessClose(device) }
         }
 
         func enqueue(candidates: [CGDirectDisplayID], delta: Float, serial: UInt64) {
@@ -84,7 +85,7 @@
         }
 
         private func closeDevices() {
-            for device in devices.values { VHExternalBrightnessClose(device) }
+            for device in devices.values { RHExternalBrightnessClose(device) }
             devices.removeAll()
             targets.removeAll()
             unavailable.removeAll()
@@ -118,7 +119,7 @@
         }
 
         private func markUnavailable(_ display: CGDirectDisplayID) {
-            if let device = devices.removeValue(forKey: display) { VHExternalBrightnessClose(device) }
+            if let device = devices.removeValue(forKey: display) { RHExternalBrightnessClose(device) }
             targets.removeValue(forKey: display)
             unavailable.insert(display)
             failedControls.insert(display)
@@ -130,14 +131,14 @@
                 if failedControls.contains(display) { return }
                 if unavailable.contains(display) { continue }
                 guard isCurrent(request) else { return }
-                guard let device = devices[display] ?? VHExternalBrightnessOpen(display) else {
+                guard let device = devices[display] ?? RHExternalBrightnessOpen(display) else {
                     unavailable.insert(display)
                     continue
                 }
                 devices[display] = device
                 var current: Float = 0
                 guard isCurrent(request) else { return }
-                guard VHExternalBrightnessRead(device, &current) else {
+                guard RHExternalBrightnessRead(device, &current) else {
                     markUnavailable(display)
                     return
                 }
@@ -152,14 +153,14 @@
                 let target = request.adjustment.apply(to: baseline)
                 guard isCurrent(request) else { return }
                 if abs(target - current) > 0.001 {
-                    guard VHExternalBrightnessWrite(device, target) else {
+                    guard RHExternalBrightnessWrite(device, target) else {
                         // Never redirect a failed write to another monitor or the built-in panel.
                         markUnavailable(display)
                         return
                     }
                     guard isCurrent(request) else { return }
                     var actual: Float = 0
-                    guard VHExternalBrightnessRead(device, &actual) else {
+                    guard RHExternalBrightnessRead(device, &actual) else {
                         markUnavailable(display)
                         return
                     }
@@ -167,7 +168,7 @@
                         // One bounded retry for displays that apply writes with a short delay.
                         Thread.sleep(forTimeInterval: 0.15)
                         guard isCurrent(request) else { return }
-                        guard VHExternalBrightnessRead(device, &actual), abs(actual - target) <= 0.011 else {
+                        guard RHExternalBrightnessRead(device, &actual), abs(actual - target) <= 0.011 else {
                             markUnavailable(display)
                             return
                         }
@@ -215,6 +216,10 @@
             {
                 center.addObserver(self, selector: #selector(stateChanged(_:)), name: name, object: nil)
             }
+        }
+
+        func preferencesDidChange() {
+            handleStateChange(UserDefaults.didChangeNotification)
         }
 
         func stop() {

@@ -1,9 +1,10 @@
+// Retro HUD by Patrick Bösch (2026)
 // MIT License. DDC/CI VCP 0x10 (luminance) only.
 #pragma once
 #include <stdbool.h>
 #include <stdint.h>
 
-static inline bool VHDDCParseBrightness(const uint8_t reply[11], uint16_t *current, uint16_t *maximum) {
+static inline bool RHDDCParseBrightness(const uint8_t reply[11], uint16_t *current, uint16_t *maximum) {
     uint8_t checksum = 0x50;
     for (unsigned i = 0; i < 10; i++) checksum ^= reply[i];
     if (reply[0] != 0x6e || reply[1] != 0x88 || reply[2] != 0x02 ||

@@ -7,28 +7,30 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A13000000000000000000001 /* ColorSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A13000000000000000000002 /* ColorSync.framework */; };
 		3045B1B12E8CB81A00C34F16 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = 3045B1AF2E8CB81A00C34F16 /* CHANGELOG.md */; };
 		3045B1B22E8CB81A00C34F16 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3045B1B02E8CB81A00C34F16 /* README.md */; };
 		30C963FE2F0AB58100DDF7AF /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30C963FD2F0AB58100DDF7AF /* AppIntents.framework */; };
 		30C963FF2F0AB58600DDF7AF /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30C963FD2F0AB58100DDF7AF /* AppIntents.framework */; };
 		30DAC6D42EEE1F73004F96CE /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = 3045B1AF2E8CB81A00C34F16 /* CHANGELOG.md */; };
 		30DAC6D62EEE1F73004F96CE /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3045B1B02E8CB81A00C34F16 /* README.md */; };
-		30DAC6D72EEE1F73004F96CE /* volumeHUD.icon in Resources */ = {isa = PBXBuildFile; fileRef = 30FF7CEE2EB20778000E1031 /* volumeHUD.icon */; };
-		30FF7CEF2EB20778000E1031 /* volumeHUD.icon in Resources */ = {isa = PBXBuildFile; fileRef = 30FF7CEE2EB20778000E1031 /* volumeHUD.icon */; };
+		30DAC6D72EEE1F73004F96CE /* RetroHUD.icon in Resources */ = {isa = PBXBuildFile; fileRef = 30FF7CEE2EB20778000E1031 /* RetroHUD.icon */; };
+		30FF7CEF2EB20778000E1031 /* RetroHUD.icon in Resources */ = {isa = PBXBuildFile; fileRef = 30FF7CEE2EB20778000E1031 /* RetroHUD.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A13000000000000000000002 /* ColorSync.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ColorSync.framework; path = System/Library/Frameworks/ColorSync.framework; sourceTree = SDKROOT; };
 		3045B1AF2E8CB81A00C34F16 /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		3045B1B02E8CB81A00C34F16 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		30C937682E806B79004B5AF5 /* volumeHUD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = volumeHUD.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		30C937682E806B79004B5AF5 /* Retro HUD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Retro HUD.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		30C963FD2F0AB58100DDF7AF /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
 		30C964002F0AB64600DDF7AF /* BuildNumber.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = BuildNumber.xcconfig; sourceTree = "<group>"; };
-		30DAC6DD2EEE1F73004F96CE /* volumeHUD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = volumeHUD.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		30FF7CEE2EB20778000E1031 /* volumeHUD.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = volumeHUD.icon; sourceTree = "<group>"; };
+		30DAC6DD2EEE1F73004F96CE /* Retro HUD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Retro HUD.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		30FF7CEE2EB20778000E1031 /* RetroHUD.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = RetroHUD.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		30DAC6DE2EEE1F73004F96CE /* Exceptions for "volumeHUD" folder in "volumeHUD (Sandbox)" target */ = {
+		30DAC6DE2EEE1F73004F96CE /* Exceptions for "RetroHUD" folder in "RetroHUD-Sandbox" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Assets.xcassets,
@@ -38,12 +40,12 @@
 				ExternalBrightnessHardware.h,
 				MediaKeyInterceptor.swift,
 			);
-			target = 30DAC6CB2EEE1F73004F96CE /* volumeHUD (Sandbox) */;
+			target = 30DAC6CB2EEE1F73004F96CE /* RetroHUD-Sandbox */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		30DAC6E72EEE21CF004F96CE /* Exceptions for "volumeHUD" folder in "Compile Sources" phase from "volumeHUD (Sandbox)" target */ = {
+		30DAC6E72EEE21CF004F96CE /* Exceptions for "RetroHUD" folder in "Compile Sources" phase from "RetroHUD-Sandbox" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			buildPhase = 30DAC6D02EEE1F73004F96CE /* Sources */;
 			membershipExceptions = (
@@ -53,13 +55,13 @@
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		30C9376A2E806B79004B5AF5 /* volumeHUD */ = {
+		30C9376A2E806B79004B5AF5 /* RetroHUD */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				30DAC6DE2EEE1F73004F96CE /* Exceptions for "volumeHUD" folder in "volumeHUD (Sandbox)" target */,
-				30DAC6E72EEE21CF004F96CE /* Exceptions for "volumeHUD" folder in "Compile Sources" phase from "volumeHUD (Sandbox)" target */,
+				30DAC6DE2EEE1F73004F96CE /* Exceptions for "RetroHUD" folder in "RetroHUD-Sandbox" target */,
+				30DAC6E72EEE21CF004F96CE /* Exceptions for "RetroHUD" folder in "Compile Sources" phase from "RetroHUD-Sandbox" target */,
 			);
-			path = volumeHUD;
+			path = RetroHUD;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -70,6 +72,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				30C963FE2F0AB58100DDF7AF /* AppIntents.framework in Frameworks */,
+				A13000000000000000000001 /* ColorSync.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				30C963FD2F0AB58100DDF7AF /* AppIntents.framework */,
+				A13000000000000000000002 /* ColorSync.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -95,12 +99,12 @@
 		30C9375F2E806B79004B5AF5 = {
 			isa = PBXGroup;
 			children = (
-				30C9376A2E806B79004B5AF5 /* volumeHUD */,
+				30C9376A2E806B79004B5AF5 /* RetroHUD */,
 				3045B1AF2E8CB81A00C34F16 /* CHANGELOG.md */,
 				3045B1B02E8CB81A00C34F16 /* README.md */,
 				30A48DC62E8B13B9005E1B15 /* Frameworks */,
 				30C937692E806B79004B5AF5 /* Products */,
-				30FF7CEE2EB20778000E1031 /* volumeHUD.icon */,
+				30FF7CEE2EB20778000E1031 /* RetroHUD.icon */,
 				30C964002F0AB64600DDF7AF /* BuildNumber.xcconfig */,
 			);
 			sourceTree = "<group>";
@@ -108,8 +112,8 @@
 		30C937692E806B79004B5AF5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				30C937682E806B79004B5AF5 /* volumeHUD.app */,
-				30DAC6DD2EEE1F73004F96CE /* volumeHUD.app */,
+				30C937682E806B79004B5AF5 /* Retro HUD.app */,
+				30DAC6DD2EEE1F73004F96CE /* Retro HUD.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -117,9 +121,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		30C937672E806B79004B5AF5 /* volumeHUD */ = {
+		30C937672E806B79004B5AF5 /* RetroHUD */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 30C937732E806B7A004B5AF5 /* Build configuration list for PBXNativeTarget "volumeHUD" */;
+			buildConfigurationList = 30C937732E806B7A004B5AF5 /* Build configuration list for PBXNativeTarget "RetroHUD" */;
 			buildPhases = (
 				30C937642E806B79004B5AF5 /* Sources */,
 				30C937652E806B79004B5AF5 /* Frameworks */,
@@ -130,18 +134,18 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				30C9376A2E806B79004B5AF5 /* volumeHUD */,
+				30C9376A2E806B79004B5AF5 /* RetroHUD */,
 			);
-			name = volumeHUD;
+			name = RetroHUD;
 			packageProductDependencies = (
 			);
-			productName = volumeHUD;
-			productReference = 30C937682E806B79004B5AF5 /* volumeHUD.app */;
+			productName = "Retro HUD";
+			productReference = 30C937682E806B79004B5AF5 /* Retro HUD.app */;
 			productType = "com.apple.product-type.application";
 		};
-		30DAC6CB2EEE1F73004F96CE /* volumeHUD (Sandbox) */ = {
+		30DAC6CB2EEE1F73004F96CE /* RetroHUD-Sandbox */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 30DAC6DA2EEE1F73004F96CE /* Build configuration list for PBXNativeTarget "volumeHUD (Sandbox)" */;
+			buildConfigurationList = 30DAC6DA2EEE1F73004F96CE /* Build configuration list for PBXNativeTarget "RetroHUD-Sandbox" */;
 			buildPhases = (
 				30DAC6D02EEE1F73004F96CE /* Sources */,
 				30DAC6D12EEE1F73004F96CE /* Frameworks */,
@@ -152,13 +156,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				30C9376A2E806B79004B5AF5 /* volumeHUD */,
+				30C9376A2E806B79004B5AF5 /* RetroHUD */,
 			);
-			name = "volumeHUD (Sandbox)";
+			name = "RetroHUD-Sandbox";
 			packageProductDependencies = (
 			);
-			productName = volumeHUD;
-			productReference = 30DAC6DD2EEE1F73004F96CE /* volumeHUD.app */;
+			productName = "Retro HUD";
+			productReference = 30DAC6DD2EEE1F73004F96CE /* Retro HUD.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -176,7 +180,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 30C937632E806B79004B5AF5 /* Build configuration list for PBXProject "volumeHUD" */;
+			buildConfigurationList = 30C937632E806B79004B5AF5 /* Build configuration list for PBXProject "RetroHUD" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -192,8 +196,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				30C937672E806B79004B5AF5 /* volumeHUD */,
-				30DAC6CB2EEE1F73004F96CE /* volumeHUD (Sandbox) */,
+				30C937672E806B79004B5AF5 /* RetroHUD */,
+				30DAC6CB2EEE1F73004F96CE /* RetroHUD-Sandbox */,
 			);
 		};
 /* End PBXProject section */
@@ -205,7 +209,7 @@
 			files = (
 				3045B1B12E8CB81A00C34F16 /* CHANGELOG.md in Resources */,
 				3045B1B22E8CB81A00C34F16 /* README.md in Resources */,
-				30FF7CEF2EB20778000E1031 /* volumeHUD.icon in Resources */,
+				30FF7CEF2EB20778000E1031 /* RetroHUD.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,7 +219,7 @@
 			files = (
 				30DAC6D42EEE1F73004F96CE /* CHANGELOG.md in Resources */,
 				30DAC6D62EEE1F73004F96CE /* README.md in Resources */,
-				30DAC6D72EEE1F73004F96CE /* volumeHUD.icon in Resources */,
+				30DAC6D72EEE1F73004F96CE /* RetroHUD.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,8 +387,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 30C964002F0AB64600DDF7AF /* BuildNumber.xcconfig */;
 			buildSettings = {
-				SWIFT_OBJC_BRIDGING_HEADER = "volumeHUD/ExternalBrightnessHardware.h";
-				ASSETCATALOG_COMPILER_APPICON_NAME = volumeHUD;
+				SWIFT_OBJC_BRIDGING_HEADER = "RetroHUD/ExternalBrightnessHardware.h";
+				ASSETCATALOG_COMPILER_APPICON_NAME = RetroHUD;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
@@ -399,18 +403,18 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = volumeHUD;
+				INFOPLIST_KEY_CFBundleDisplayName = "Retro HUD";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Danny Stewart";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Retro HUD © 2026 Patrick Bösch. Based on volumeHUD © 2025 Danny Stewart.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 3.3.3;
+				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dannystewart.volumehud.debug;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Retro HUD";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -424,8 +428,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 30C964002F0AB64600DDF7AF /* BuildNumber.xcconfig */;
 			buildSettings = {
-				SWIFT_OBJC_BRIDGING_HEADER = "volumeHUD/ExternalBrightnessHardware.h";
-				ASSETCATALOG_COMPILER_APPICON_NAME = volumeHUD;
+				SWIFT_OBJC_BRIDGING_HEADER = "RetroHUD/ExternalBrightnessHardware.h";
+				ASSETCATALOG_COMPILER_APPICON_NAME = RetroHUD;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
@@ -440,18 +444,18 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = volumeHUD;
+				INFOPLIST_KEY_CFBundleDisplayName = "Retro HUD";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Danny Stewart";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Retro HUD © 2026 Patrick Bösch. Based on volumeHUD © 2025 Danny Stewart.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 3.3.3;
+				MARKETING_VERSION = 4.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dannystewart.volumehud;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Retro HUD";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -466,7 +470,7 @@
 			baseConfigurationReference = 30C964002F0AB64600DDF7AF /* BuildNumber.xcconfig */;
 			buildSettings = {
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)/$(CONFIGURATION)-Sandbox$(EFFECTIVE_PLATFORM_NAME)";
-				ASSETCATALOG_COMPILER_APPICON_NAME = volumeHUD;
+				ASSETCATALOG_COMPILER_APPICON_NAME = RetroHUD;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
@@ -481,19 +485,19 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = volumeHUD;
+				INFOPLIST_KEY_CFBundleDisplayName = "Retro HUD";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Danny Stewart";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Retro HUD © 2026 Patrick Bösch. Based on volumeHUD © 2025 Danny Stewart.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 3.3.3;
+				MARKETING_VERSION = 4.0.0;
 				OTHER_SWIFT_FLAGS = "-D SANDBOX";
 				PRODUCT_BUNDLE_IDENTIFIER = com.dannystewart.volumehud.mas;
-				PRODUCT_NAME = volumeHUD;
+				PRODUCT_NAME = "Retro HUD";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -508,7 +512,7 @@
 			baseConfigurationReference = 30C964002F0AB64600DDF7AF /* BuildNumber.xcconfig */;
 			buildSettings = {
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)/$(CONFIGURATION)-Sandbox$(EFFECTIVE_PLATFORM_NAME)";
-				ASSETCATALOG_COMPILER_APPICON_NAME = volumeHUD;
+				ASSETCATALOG_COMPILER_APPICON_NAME = RetroHUD;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
@@ -523,19 +527,19 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = volumeHUD;
+				INFOPLIST_KEY_CFBundleDisplayName = "Retro HUD";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Danny Stewart";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Retro HUD © 2026 Patrick Bösch. Based on volumeHUD © 2025 Danny Stewart.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 3.3.3;
+				MARKETING_VERSION = 4.0.0;
 				OTHER_SWIFT_FLAGS = "-D SANDBOX";
 				PRODUCT_BUNDLE_IDENTIFIER = com.dannystewart.volumehud.mas;
-				PRODUCT_NAME = volumeHUD;
+				PRODUCT_NAME = "Retro HUD";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -548,7 +552,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		30C937632E806B79004B5AF5 /* Build configuration list for PBXProject "volumeHUD" */ = {
+		30C937632E806B79004B5AF5 /* Build configuration list for PBXProject "RetroHUD" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				30C937712E806B7A004B5AF5 /* Debug */,
@@ -557,7 +561,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		30C937732E806B7A004B5AF5 /* Build configuration list for PBXNativeTarget "volumeHUD" */ = {
+		30C937732E806B7A004B5AF5 /* Build configuration list for PBXNativeTarget "RetroHUD" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				30C937742E806B7A004B5AF5 /* Debug */,
@@ -566,7 +570,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		30DAC6DA2EEE1F73004F96CE /* Build configuration list for PBXNativeTarget "volumeHUD (Sandbox)" */ = {
+		30DAC6DA2EEE1F73004F96CE /* Build configuration list for PBXNativeTarget "RetroHUD-Sandbox" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				30DAC6DB2EEE1F73004F96CE /* Debug */,
