@@ -35,6 +35,9 @@ final class MediaKeyInterceptor {
         case brightnessUp = 2
         case brightnessDown = 3
         case mute = 7
+        case keyboardBrightnessUp = 21
+        case keyboardBrightnessDown = 22
+        case keyboardBrightnessToggle = 23
     }
 
     /// How long to suppress VolumeMonitor HUD updates after an intercepted change
@@ -67,6 +70,7 @@ final class MediaKeyInterceptor {
     }
 
     weak var hudController: HUDController?
+    weak var keyboardBrightnessMonitor: KeyboardBrightnessMonitor?
 
     let logger: Logger = .init()
 
@@ -259,6 +263,14 @@ final class MediaKeyInterceptor {
 
         // Check if this is a key we want to intercept
         switch keyType {
+        case .keyboardBrightnessUp, .keyboardBrightnessDown, .keyboardBrightnessToggle:
+            // Observe only: macOS still handles the hardware, modifiers, and key repeat.
+            // In particular, never swallow a keyboard-light key if private API access fails.
+            Task { @MainActor [weak self] in
+                self?.keyboardBrightnessMonitor?.keyboardKeyPressed()
+            }
+            return Unmanaged.passRetained(cgEvent)
+
         case .soundUp, .soundDown, .mute:
             logger.debug(
                 "Volume key modifiers: shift=\(shiftHeld), option=\(optionHeld), nsShift=\(shiftHeldFromNSEvent), nsOption=\(optionHeldFromNSEvent), cgShift=\(shiftHeldFromCGEvent), cgOption=\(optionHeldFromCGEvent), sessionShift=\(shiftHeldFromSession), sessionOption=\(optionHeldFromSession), cgFlags=\(eventFlags.rawValue), sessionFlags=\(sessionFlags.rawValue)",

@@ -12,6 +12,7 @@ import SwiftUI
 enum HUDType {
     case volume
     case brightness
+    case keyboardBrightness
 }
 
 // MARK: - HUDView
@@ -41,6 +42,9 @@ struct HUDView: View {
 
         case .brightness:
             "sun.max"
+
+        case .keyboardBrightness:
+            "light.max"
         }
     }
 
@@ -148,5 +152,12 @@ struct HUDView: View {
     ZStack {
         Color.black.frame(width: 360, height: 380).ignoresSafeArea()
         HUDView(hudType: .brightness, value: 0.5, isMuted: false)
+    }
+}
+
+#Preview("Keyboard Brightness") {
+    ZStack {
+        Color.black.frame(width: 360, height: 380).ignoresSafeArea()
+        HUDView(hudType: .keyboardBrightness, value: 0.5, isMuted: false)
     }
 }
