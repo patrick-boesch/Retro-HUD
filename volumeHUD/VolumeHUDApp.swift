@@ -27,6 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
     var volumeMonitor: VolumeMonitor!
     #if !SANDBOX
         var brightnessMonitor: BrightnessMonitor!
+        var keyboardBrightnessMonitor: KeyboardBrightnessMonitor?
         var mediaKeyInterceptor: MediaKeyInterceptor?
     #endif // !SANDBOX
     var hudController: HUDController!
@@ -90,6 +91,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         volumeMonitor = VolumeMonitor(isPreviewMode: false)
         #if !SANDBOX
             brightnessMonitor = BrightnessMonitor(isPreviewMode: false)
+            UserDefaults.standard.register(defaults: ["keyboardBrightnessEnabled": true])
+            keyboardBrightnessMonitor = KeyboardBrightnessMonitor()
         #endif // !SANDBOX
         hudController = HUDController(isPreviewMode: false)
 
@@ -97,6 +100,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         volumeMonitor.hudController = hudController
         #if !SANDBOX
             brightnessMonitor.hudController = hudController
+            keyboardBrightnessMonitor?.hudController = hudController
         #endif // !SANDBOX
 
         #if !SANDBOX
@@ -128,6 +132,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         #if !SANDBOX
             // Start brightness monitoring only if enabled in settings
             startBrightnessMonitoringIfEnabled()
+            startKeyboardBrightnessMonitoringIfEnabled()
 
             // Start media key interceptor to hide system HUDs
             startMediaKeyInterceptor()
@@ -167,6 +172,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
             if mediaKeyInterceptor == nil {
                 mediaKeyInterceptor = MediaKeyInterceptor()
                 mediaKeyInterceptor?.hudController = hudController
+                mediaKeyInterceptor?.keyboardBrightnessMonitor = keyboardBrightnessMonitor
 
                 // Connect VolumeMonitor to interceptor so it can skip HUD updates when the
                 // interceptor is handling volume changes
@@ -177,6 +183,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
                 logger.info("Media key interceptor started.")
             } else {
                 logger.warning("Failed to start media key interceptor. Accessibility permissions may be required.")
+            }
+        }
+
+        func startKeyboardBrightnessMonitoringIfEnabled() {
+            if UserDefaults.standard.bool(forKey: "keyboardBrightnessEnabled") {
+                keyboardBrightnessMonitor?.startMonitoring()
+            } else {
+                keyboardBrightnessMonitor?.stopMonitoring()
             }
         }
     #endif // !SANDBOX
@@ -333,7 +347,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
 
         // Use NSPanel to remain in accessory mode
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 300),
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: AboutView.preferredHeight),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false,
@@ -349,7 +363,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
         if let screen = NSScreen.main {
             let screenFrame = screen.visibleFrame
             let windowWidth: CGFloat = 600
-            let windowHeight: CGFloat = 300
+            let windowHeight = AboutView.preferredHeight
 
             let x = screenFrame.origin.x + (screenFrame.width - windowWidth) / 2
             let y = screenFrame.origin.y + screenFrame.height * 0.66 - windowHeight / 2
@@ -462,6 +476,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency UNUserNotifi
 
         #if !SANDBOX
             if isBrightnessEnabled { brightnessMonitor?.stopMonitoring() }
+            keyboardBrightnessMonitor?.stopMonitoring()
             mediaKeyInterceptor?.stop()
         #endif // !SANDBOX
         hudController?.stopDisplayChangeMonitoring()

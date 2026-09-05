@@ -23,6 +23,7 @@ class HUDController: ObservableObject {
     private var lastShownVolume: Float?
     private var lastShownMuted: Bool?
     private var lastShownBrightness: Float?
+    private var lastShownKeyboardBrightness: Float?
     private var lastShownHUDType: HUDType?
     private var isObservingDisplayChanges = false
     private let isPreviewMode: Bool
@@ -47,6 +48,11 @@ class HUDController: ObservableObject {
                 return
             }
             displayHUD(hudType: .brightness, value: brightness, isMuted: false)
+        }
+
+        func showKeyboardBrightnessHUD(brightness: Float) {
+            guard UserDefaults.standard.bool(forKey: "keyboardBrightnessEnabled") else { return }
+            displayHUD(hudType: .keyboardBrightness, value: brightness, isMuted: false)
         }
     #endif // !SANDBOX
 
@@ -279,6 +285,12 @@ class HUDController: ObservableObject {
                         || lastShownHUDType != hudType
                         || lastShownBrightness == nil
                         || abs((lastShownBrightness ?? -1) - value) > 0.0005
+
+                case .keyboardBrightness:
+                    hostingView == nil
+                        || lastShownHUDType != hudType
+                        || lastShownKeyboardBrightness == nil
+                        || abs((lastShownKeyboardBrightness ?? -1) - value) > 0.0005
                 }
 
             // If nothing changed and the window is already visible, just extend the timer
@@ -320,6 +332,9 @@ class HUDController: ObservableObject {
 
         case .brightness:
             lastShownBrightness = value
+
+        case .keyboardBrightness:
+            lastShownKeyboardBrightness = value
         }
     }
 

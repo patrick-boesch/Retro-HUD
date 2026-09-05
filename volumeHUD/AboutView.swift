@@ -15,6 +15,7 @@ struct AboutView: View {
     // Settings for app preferences
     #if !SANDBOX
         @AppStorage("brightnessEnabled") private var brightnessEnabled: Bool = false
+        @AppStorage("keyboardBrightnessEnabled") private var keyboardBrightnessEnabled: Bool = true
     #endif // !SANDBOX
     @AppStorage("volumeHUDFollowsMouse") private var volumeHUDFollowsMouse: Bool = true
     @AppStorage("useRelativePositioning") private var useRelativePositioning: Bool = true
@@ -41,6 +42,14 @@ struct AboutView: View {
     private let minSettingColumnWidth: CGFloat = 140
     private let settingPadding: CGFloat = 24 // Higher for less padding
     private let spaceBeforeSubtitle: CGFloat = -3
+
+    static var preferredHeight: CGFloat {
+        #if SANDBOX
+            300
+        #else
+            360
+        #endif
+    }
 
     /// Get the app version
     private var appVersion: String {
@@ -177,6 +186,42 @@ struct AboutView: View {
                     }
                     .padding(.leading, settingPadding)
                     .animation(.easeInOut(duration: 0.3), value: brightnessEnabled)
+
+                    // MARK: - Keyboard Brightness HUD Toggle
+
+                    VStack(alignment: .leading, spacing: spaceBeforeSubtitle) {
+                        HStack(alignment: .center, spacing: iconColumnWidth) {
+                            Image(systemName: "light.max")
+                                .foregroundStyle(keyboardBrightnessEnabled ? .orange : .gray)
+                                .font(.system(size: 14))
+                                .frame(width: 14, alignment: .leading)
+
+                            Text("Keyboard Brightness HUD")
+                                .font(.system(size: 12, weight: .medium))
+                                .frame(width: minSettingColumnWidth, alignment: .leading)
+
+                            Spacer()
+
+                            Toggle("", isOn: $keyboardBrightnessEnabled)
+                                .accessibilityLabel("Keyboard Brightness HUD")
+                                .toggleStyle(SwitchToggleStyle(tint: .accentColor))
+                                .scaleEffect(0.8)
+                                .onChange(of: keyboardBrightnessEnabled) { _, _ in
+                                    appDelegate?.startKeyboardBrightnessMonitoringIfEnabled()
+                                }
+                        }
+
+                        HStack(spacing: iconColumnWidth) {
+                            Spacer()
+                                .frame(width: 14)
+                            Text("Built-in keyboard; system HUD may also appear")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                                .opacity(0.8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .padding(.leading, settingPadding)
                 #endif // !SANDBOX
 
                 // MARK: - Display Toggle for HUD Placement
@@ -260,7 +305,7 @@ struct AboutView: View {
             .padding(.trailing, 6) // Right side window padding
         }
         .padding(32) // Overall frame padding
-        .frame(width: 540, height: 300)
+        .frame(width: 540, height: Self.preferredHeight)
         #if !SANDBOX
             .onAppear {
                 Task {

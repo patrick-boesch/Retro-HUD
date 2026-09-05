@@ -1,5 +1,11 @@
 # volumeHUD
 
+## This fork: keyboard brightness HUD
+
+This fork adds an experimental **Keyboard Brightness HUD**, enabled by default in the non-sandbox app. It reuses the classic 16-segment overlay for the built-in keyboard and can be switched off independently in settings. It observes the actual backlight level and leaves keyboard control to macOS; the system indicator may also appear.
+
+Build this fork to use the addition. The upstream Homebrew installation described below does **not** include it. See [keyboard HUD behavior, limitations, and Mac validation](KEYBOARD-HUD.md). The upstream project description follows.
+
 A simple macOS app that brings back the classic volume and brightness HUDs.
 
 **PLEASE NOTE: volumeHUD is feature-complete and no longer under active development.** This is an app I built for myself and it does everything it's supposed to. I'm very glad it's found an appreciative audience, but I am not accepting PRs and no further updates are planned except to fix bugs and maintain macOS compatibility.
