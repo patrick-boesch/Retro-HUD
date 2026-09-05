@@ -238,7 +238,16 @@ final class MediaKeyInterceptor {
         let keyFlags = data1 & 0x0000_FFFF
         let keyState = (keyFlags & 0xFF00) >> 8
 
-        // 0x0A = key down, 0x0B = key up Only handle key down events
+        // The tap is installed on CFRunLoopGetMain(). Decide synchronously so a
+        // successfully handled keyboard-light event cannot also reach Apple's HUD.
+        if keyState == 0x0B, (21 ... 23).contains(keyCode), Thread.isMainThread {
+            let consumed = MainActor.assumeIsolated {
+                self.keyboardBrightnessMonitor?.handleKeyUp(keyCode: keyCode) ?? false
+            }
+            if consumed { return nil }
+        }
+
+        // Other key releases retain their existing pass-through behavior.
         guard keyState == 0x0A else {
             return Unmanaged.passRetained(cgEvent)
         }
@@ -264,12 +273,11 @@ final class MediaKeyInterceptor {
         // Check if this is a key we want to intercept
         switch keyType {
         case .keyboardBrightnessUp, .keyboardBrightnessDown, .keyboardBrightnessToggle:
-            // Observe only: macOS still handles the hardware, modifiers, and key repeat.
-            // In particular, never swallow a keyboard-light key if private API access fails.
-            Task { @MainActor [weak self] in
-                self?.keyboardBrightnessMonitor?.keyboardKeyPressed()
+            guard Thread.isMainThread else { return Unmanaged.passRetained(cgEvent) }
+            let consumed = MainActor.assumeIsolated {
+                self.keyboardBrightnessMonitor?.handleKeyDown(keyCode: keyCode, useFineStep: useFineStep) ?? false
             }
-            return Unmanaged.passRetained(cgEvent)
+            return consumed ? nil : Unmanaged.passRetained(cgEvent)
 
         case .soundUp, .soundDown, .mute:
             logger.debug(
