@@ -108,9 +108,9 @@
             guard
                 instance.responds(to: selector),
                 let method = class_getInstanceMethod(type(of: instance), selector),
-                method_getNumberOfArguments(method) == UInt32(arguments.count + 2),
-                let returnType = method_copyReturnType(method)
+                method_getNumberOfArguments(method) == UInt32(arguments.count + 2)
             else { return nil }
+            let returnType = method_copyReturnType(method)
             defer { free(returnType) }
             guard returnTypes.contains(String(cString: returnType)) else { return nil }
             for (index, expected) in arguments.enumerated() {
