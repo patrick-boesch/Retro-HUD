@@ -214,7 +214,7 @@ struct AboutView: View {
                         HStack(spacing: iconColumnWidth) {
                             Spacer()
                                 .frame(width: 14)
-                            Text("Built-in keyboard; system HUD may also appear")
+                            Text("Key presses only; requires Accessibility access")
                                 .font(.system(size: 10))
                                 .foregroundStyle(.secondary)
                                 .opacity(0.8)

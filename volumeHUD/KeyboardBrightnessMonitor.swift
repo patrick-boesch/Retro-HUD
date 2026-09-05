@@ -22,6 +22,8 @@
         private var booleanFunctions: [String: BooleanFunction] = [:]
         private let brightnessSelector = NSSelectorFromString("brightnessForKeyboard:")
 
+        var isConnected: Bool { client != nil }
+
         /// Enumerate IDs instead of assuming that keyboard 1 exists (desktop/clamshell Macs).
         func connect() -> Bool {
             disconnect()
@@ -39,12 +41,7 @@
                 )
             else { return false }
 
-            // Optional status methods let us filter idle/ambient dimming when the OS exposes it.
-            for name in [
-                "isKeyboardBuiltIn:", "isBacklightDimmedOnKeyboard:",
-                "isBacklightSuppressedOnKeyboard:", "isBacklightSaturatedOnKeyboard:",
-                "isAutoBrightnessEnabledForKeyboard:",
-            ] {
+            for name in ["isKeyboardBuiltIn:"] {
                 if let method = checkedMethod(on: instance, name: name, returns: ["B", "c"], arguments: ["Q"]) {
                     booleanFunctions[name] = unsafeBitCast(method_getImplementation(method), to: BooleanFunction.self)
                 }
@@ -88,19 +85,6 @@
             return value
         }
 
-        func isSystemDimming(brightness: Float) -> Bool {
-            flag("isBacklightDimmedOnKeyboard:")
-                || flag("isBacklightSuppressedOnKeyboard:")
-                || (brightness <= 0.001
-                    && flag("isBacklightSaturatedOnKeyboard:")
-                    && flag("isAutoBrightnessEnabledForKeyboard:"))
-        }
-
-        private func flag(_ name: String) -> Bool {
-            guard let client, let keyboardID, let function = booleanFunctions[name] else { return false }
-            return function(client, NSSelectorFromString(name), keyboardID)
-        }
-
         private func checkedMethod(
             on instance: NSObject, name: String, returns returnTypes: Set<String>, arguments: [String],
         ) -> Method? {
@@ -123,23 +107,24 @@
         }
     }
 
+    /// The keyboard HUD is armed exclusively by an illumination-key event.
+    /// Brief readback sampling follows macOS's fade, then stops completely.
     @MainActor
     final class KeyboardBrightnessMonitor: NSObject {
         weak var hudController: HUDController?
 
         private let reader = KeyboardBacklightReader()
         private let logger = Logger()
-        private var pollingTimer: Timer?
+        private var samplingTimer: Timer?
         private var isMonitoring = false
         private var systemSleeping = false
         private var displaysSleeping = false
         private var sessionInactive = false
         private var generation = 0
-        private var previousBrightness: Float?
-        private var wasSystemDimming = false
-        private var suppressChangesUntil: TimeInterval = 0
-        private var lastKeyboardKeyTime: TimeInterval = -.infinity
+        private var keyReadbackDeadline: TimeInterval = 0
         private var needsKeyHUD = false
+        private var lastDisplayedBrightness: Float?
+        private var hasLoggedUnavailable = false
 
         private var isSuspended: Bool { systemSleeping || displaysSleeping || sessionInactive }
 
@@ -153,92 +138,86 @@
             center.addObserver(self, selector: #selector(workspaceStateChanged(_:)), name: NSWorkspace.screensDidWakeNotification, object: nil)
             center.addObserver(self, selector: #selector(workspaceStateChanged(_:)), name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
             center.addObserver(self, selector: #selector(workspaceStateChanged(_:)), name: NSWorkspace.sessionDidBecomeActiveNotification, object: nil)
-            beginPolling()
+            // No timer, CoreBrightness reads, or HUD at launch/re-enable.
         }
 
         func stopMonitoring() {
             isMonitoring = false
             NSWorkspace.shared.notificationCenter.removeObserver(self)
-            pausePolling()
+            stopSampling()
+            reader.disconnect()
+            hasLoggedUnavailable = false
             systemSleeping = false
             displaysSleeping = false
             sessionInactive = false
         }
 
-        /// Called by the existing media-key tap. Let macOS process the key before reading it.
-        /// Repeats and presses at 0/100% should also extend the HUD's existing display timer.
+        /// The existing event tap calls this for NX illumination up/down/toggle (21/22/23).
+        /// Native keys and the supplied hidutil remapping use this same path.
         func keyboardKeyPressed() {
-            guard isMonitoring, !isSuspended, pollingTimer != nil else { return }
-            lastKeyboardKeyTime = ProcessInfo.processInfo.systemUptime
-            needsKeyHUD = true
-            let token = generation
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) { [weak self] in
-                guard let self, self.generation == token, self.isMonitoring, !self.isSuspended else { return }
-                self.checkForChange()
-            }
-        }
+            guard
+                isMonitoring, !isSuspended,
+                UserDefaults.standard.bool(forKey: "keyboardBrightnessEnabled")
+            else { return }
 
-        private func beginPolling() {
-            guard isMonitoring, !isSuspended else { return }
-            pausePolling()
-            guard reader.connect(), let initial = reader.brightness() else {
-                logger.info("Keyboard HUD: no supported built-in backlight is available.")
+            if !reader.isConnected, !reader.connect() {
+                if !hasLoggedUnavailable {
+                    logger.info("Keyboard HUD: no supported built-in backlight is available.")
+                    hasLoggedUnavailable = true
+                }
                 return
             }
-            // Establish a silent baseline on launch/re-enable/wake. Never show a startup HUD.
-            previousBrightness = initial
-            wasSystemDimming = reader.isSystemDimming(brightness: initial)
+            hasLoggedUnavailable = false
+
+            // Repeats extend one bounded readback session; they do not reset its first tick.
+            keyReadbackDeadline = ProcessInfo.processInfo.systemUptime + 0.6
+            needsKeyHUD = true
+            guard samplingTimer == nil else { return }
+
             let token = generation
-            let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
+            let timer = Timer(timeInterval: 0.08, repeats: true) { [weak self] _ in
                 Task { @MainActor [weak self] in
-                    guard let self, self.generation == token, self.isMonitoring, !self.isSuspended else { return }
-                    self.checkForChange()
+                    guard let self, self.generation == token else { return }
+                    self.sampleAfterKeyPress()
                 }
             }
-            timer.tolerance = 0.05
+            timer.fireDate = Date().addingTimeInterval(0.04)
+            timer.tolerance = 0.01
             RunLoop.main.add(timer, forMode: .common)
-            pollingTimer = timer
+            samplingTimer = timer
         }
 
-        private func pausePolling() {
+        private func stopSampling() {
+            // Reject timer callbacks already queued before disable/sleep/expiration.
             generation += 1
-            pollingTimer?.invalidate()
-            pollingTimer = nil
-            previousBrightness = nil
+            samplingTimer?.invalidate()
+            samplingTimer = nil
+            keyReadbackDeadline = 0
             needsKeyHUD = false
-            lastKeyboardKeyTime = -.infinity
-            wasSystemDimming = false
-            suppressChangesUntil = 0
-            reader.disconnect()
+            lastDisplayedBrightness = nil
         }
 
-        private func checkForChange() {
-            guard UserDefaults.standard.bool(forKey: "keyboardBrightnessEnabled") else { return }
+        private func sampleAfterKeyPress() {
+            guard
+                isMonitoring, !isSuspended,
+                UserDefaults.standard.bool(forKey: "keyboardBrightnessEnabled"),
+                ProcessInfo.processInfo.systemUptime <= keyReadbackDeadline
+            else {
+                stopSampling()
+                return
+            }
             guard let brightness = reader.brightness() else {
-                logger.info("Keyboard HUD: brightness became unavailable; monitoring paused until wake or re-enable.")
-                pausePolling()
+                logger.info("Keyboard HUD: backlight unavailable; retrying on the next illumination key.")
+                stopSampling()
+                reader.disconnect()
                 return
             }
-            guard let previous = previousBrightness else {
-                previousBrightness = brightness
-                return
-            }
-            let changed = abs(brightness - previous) > 0.005
-            guard changed || needsKeyHUD else { return }
-            previousBrightness = brightness
 
-            // Only query these additional properties on a change, not on every polling tick.
-            let systemDimming = reader.isSystemDimming(brightness: brightness)
-            let now = ProcessInfo.processInfo.systemUptime
-            let recentKey = now - lastKeyboardKeyTime < 1.0
-            if systemDimming || wasSystemDimming {
-                suppressChangesUntil = now + 1.0
-            }
-            wasSystemDimming = systemDimming
+            // A key at 0/100% still shows the actual level; automatic changes cannot arm us.
+            let changed = lastDisplayedBrightness.map { abs(brightness - $0) > 0.005 } ?? true
+            guard needsKeyHUD || changed else { return }
             needsKeyHUD = false
-            // Restoration can fade through several readings; ignore the whole transition.
-            guard !systemDimming, recentKey || now >= suppressChangesUntil else { return }
-
+            lastDisplayedBrightness = brightness
             hudController?.showKeyboardBrightnessHUD(brightness: brightness)
         }
 
@@ -261,14 +240,10 @@
             case NSWorkspace.sessionDidBecomeActiveNotification: sessionInactive = false
             default: return
             }
-            pausePolling()
-            guard isMonitoring, !isSuspended else { return }
-            let token = generation
-            // Allow the hardware to settle, then take a fresh baseline without flashing a HUD.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                guard let self, self.generation == token else { return }
-                self.beginPolling()
-            }
+            stopSampling()
+            reader.disconnect()
+            hasLoggedUnavailable = false
+            // Wake only clears suspension. A new key press must arm the HUD again.
         }
     }
 #endif // !SANDBOX

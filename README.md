@@ -2,7 +2,7 @@
 
 ## This fork: keyboard brightness HUD
 
-This fork adds an experimental **Keyboard Brightness HUD**, enabled by default in the non-sandbox app. It reuses the classic 16-segment overlay for the built-in keyboard and can be switched off independently in settings. It observes the actual backlight level and leaves keyboard control to macOS; the system indicator may also appear.
+This fork adds an experimental **Keyboard Brightness HUD**, enabled by default in the non-sandbox app. It reuses the classic 16-segment overlay for the built-in keyboard and can be switched off independently in settings. **Only keyboard-illumination key presses trigger it**; automatic brightness, idle dimming, and slider changes do not start a HUD. It uses the existing Accessibility-authorized key tap and leaves keyboard control to macOS; the system indicator may also appear. The supplied [standard key-remapping template](extras/com.local.KeyRemapping.plist) works with the same event path.
 
 Build this fork to use the addition. The upstream Homebrew installation described below does **not** include it. See [keyboard HUD behavior, limitations, and Mac validation](KEYBOARD-HUD.md). The upstream project description follows.
 
