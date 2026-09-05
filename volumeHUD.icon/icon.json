@@ -1,36 +1,38 @@
 {
-    "fill": {
-        "automatic-gradient": "extended-srgb:0.00000,0.53333,1.00000,1.00000"
-    },
-    "groups": [
+  "fill" : {
+    "automatic-gradient" : "extended-gray:0.31800,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
         {
-            "layers": [
-                {
-                    "image-name": "volumeHUD.png",
-                    "name": "volumeHUD",
-                    "position": {
-                        "scale": 1.1,
-                        "translation-in-points": [
-                            0,
-                            -32.953125
-                        ]
-                    }
-                }
-            ],
-            "shadow": {
-                "kind": "neutral",
-                "opacity": 0.5
-            },
-            "translucency": {
-                "enabled": true,
-                "value": 0.5
-            }
+          "blend-mode" : "darken",
+          "fill" : "automatic",
+          "image-name" : "volume_up_512dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg",
+          "name" : "volume_up_512dp_E3E3E3_FILL0_wght300_GRAD0_opsz48",
+          "position" : {
+            "scale" : 20,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
         }
-    ],
-    "supported-platforms": {
-        "circles": [
-            "watchOS"
-        ],
-        "squares": "shared"
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
     }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
 }
